@@ -91,6 +91,8 @@ async def test_vehicle_buttons_setup_press_reload_and_unload(hass, charger, lang
             else:
                 assert hass.states.get(entity_id).attributes["friendly_name"] == f"Garage {labels[vehicle]}"
         chip_sensor = registry.async_get_entity_id("sensor", "wattpilot", "Garage-trx")
+        await hass.async_add_executor_job(report_transaction, "trx", charger.allProps["trx"])
+        await hass.async_block_till_done()
         assert hass.states.get(chip_sensor).state == "No Chip"
         for vehicle, transaction in (("audi", 1), ("fiat", 2)):
             await hass.services.async_call(
