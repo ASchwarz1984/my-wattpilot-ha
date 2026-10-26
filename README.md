@@ -1,6 +1,4 @@
 [![GitHub Latest Release][releases_shield]][latest_release]
-[![Community Forum][community_forum_shield]][community_forum]
-[![PayPal.Me][paypal_me_shield]][paypal_me]
 
 [latest_release]: https://github.com/ASchwarz1984/my-wattpilot-ha/releases/latest
 [releases_shield]: https://img.shields.io/github/release/ASchwarz1984/my-wattpilot-ha.svg?style=popout
