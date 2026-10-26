@@ -53,5 +53,5 @@ def test_manifest_uses_only_our_repository_and_no_external_client():
     assert manifest["documentation"] == "https://github.com/ASchwarz1984/my-wattpilot-ha"
     assert manifest["issue_tracker"] == manifest["documentation"] + "/issues"
     assert not any(req.startswith("wattpilot") for req in manifest["requirements"])
-    assert any(req.startswith("bcrypt==") for req in manifest["requirements"])
+    assert not any(req.startswith("bcrypt") for req in manifest["requirements"])
     assert any(req.startswith("websocket-client==") for req in manifest["requirements"])

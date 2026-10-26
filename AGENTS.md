@@ -215,6 +215,10 @@ Follow Home Assistant conventions and current Python best practices:
 - Write clear, maintainable and typed Python code consistent with the repository style.
 - Place constants for the Home Assistant integration in `custom_components/wattpilot/const.py`.
   - A central constants module prevents duplicated definitions, keeps shared integration values discoverable and maintains the repository's established module structure.
+- Do not list Home Assistant core dependencies such as `bcrypt` in the
+  integration manifest; use the version supplied by Home Assistant.
+  - Hassfest rejects custom integration manifests that redeclare core
+    dependencies. Standalone client tests must still provide those packages.
 - Write every `_LOGGER` call on a single line. Do not split `_LOGGER` calls across multiple lines.
 
 ### 4.4 Compatibility, Safety and Behaviour

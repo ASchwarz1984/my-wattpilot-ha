@@ -21,7 +21,8 @@ CONFIG = yaml.safe_load(
 
 def _button(uid, charger=None):
     charger = charger or MockCharger(extra_props={"trx": None})
-    charger.send_update = MagicMock()
+    if not hasattr(charger, "send_update"):
+        charger.send_update = MagicMock()
     entry = MagicMock(entry_id="test_entry")
     entry.data = {"friendly_name": "Garage"}
     cfg = next(cfg for cfg in CONFIG if cfg.get("uid", cfg["id"]) == uid)
@@ -56,6 +57,37 @@ async def test_generic_authentication_still_uses_no_chip():
     entity._charger.send_update.assert_called_once_with("trx", 0)
     assert entity._attr_unique_id == "Garage-trx"
     assert entity.entity_registry_enabled_default is False
+
+
+@pytest.mark.parametrize(
+    ("vehicle", "transaction", "chip"), [("audi", 1, "ID Chip 0"), ("fiat", 2, "ID Chip 1")]
+)
+async def test_authentication_wire_message_and_reported_chip(vehicle, transaction, chip):
+    from tests.conftest import ChargerSensor
+    from tests.test_wattpilot_lib import _load_lib
+
+    client = _load_lib().Wattpilot(ip="192.0.2.1", password="test")
+    client._connected = True
+    client._allPropsInitialized = True
+    client._allProps.update(MockCharger(extra_props={"trx": None}).allProps)
+    button = _button(f"authenticate_{vehicle}", client)
+    await button.async_press()
+    sent = json.loads(client._wsapp.send.call_args.args[0])
+    assert sent == {"type": "setValue", "requestId": 1, "key": "trx", "value": transaction}
+    assert client.allProps["trx"] is None
+
+    client._Wattpilot__on_message(None, json.dumps({
+        "type": "response", "success": True, "requestId": 1, "status": {"trx": transaction}
+    }))
+    sensor_cfg = next(
+        cfg for cfg in yaml.safe_load(
+            (ROOT / "custom_components" / "wattpilot" / "sensor.yaml").read_text(encoding="utf-8")
+        )["sensor"] if cfg["id"] == "trx"
+    )
+    sensor = ChargerSensor(MagicMock(), button._entry, sensor_cfg, client)
+    assert sensor._init_failed is False
+    await sensor.async_local_poll()
+    assert sensor._attr_native_value == chip
 
 
 @pytest.mark.parametrize("uid", ["authenticate_audi", "authenticate_fiat"])

@@ -121,7 +121,6 @@ jobs:
       - name: Install latest Home Assistant
         run: |
           pip install homeassistant \
-            "bcrypt==5.0.0" \
             "websocket-client==1.9.2" \
             "pyyaml>=5.3.0" \
             "importlib_metadata>=4.0.0" \
