@@ -175,6 +175,11 @@ Each YAML file begins with a comment listing available properties and their expl
 - Where a property has a limited set of permitted values, list those values in the comment.
 - Keep Home Assistant metadata, translations, YAML definitions and tests consistent when adding or changing entities, services or attributes.
   - Home Assistant exposes entities and services through several connected definitions; incomplete updates create broken setup, missing UI text or inconsistent behaviour.
+- For translated entity names, leave `_attr_name` unset and test the rendered
+  friendly name against a real Home Assistant core.
+  - Setting `_attr_name = None` suppresses the translation and displays only the
+    device name. Checking translation JSON or entity IDs alone missed this
+    failure in the first vehicle-button release.
 
 ## 4. Working Principles
 
@@ -252,6 +257,12 @@ Follow Home Assistant conventions and current Python best practices:
   - Do not hide errors by inventing fallback values.
   - Invented fallback values can conceal communication failures and lead users to make charging decisions based on incorrect wallbox state.
 - Do not change wallbox behaviour, particularly start/stop, current, charging scheduling or cloud usage, unless explicitly requested.
+- Do not reset or restart charging transactions to change chip attribution.
+  Confirm vehicle authorization using the charger-reported `trx` value.
+  - A first-generation 11 kW firmware 42.5 device rejected reassignment with
+    "cannot start another transaction when it has already been used to charge".
+    A sent command is not proof of acceptance; bypassing the rejection could
+    interrupt charging or misattribute energy.
 - If a change affects a potentially security- or cost-relevant cloud function:
   - Explicitly identify the risk.
   - Implement it only after clear approval.

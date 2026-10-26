@@ -2,10 +2,10 @@
     "entity": {
         "button": {
             "authenticate_audi": {
-                "name": "Authenticate Audi"
+                "name": "Authorize Audi (chip 0)"
             },
             "authenticate_fiat": {
-                "name": "Authenticate Fiat"
+                "name": "Authorize Fiat (chip 1)"
             }
         }
     },
@@ -18,6 +18,9 @@
         },
         "charger_command_failed": {
             "message": "The command could not be sent to the charger. Check the integration logs."
+        },
+        "authentication_not_confirmed": {
+            "message": "The charger did not confirm ID chip {chip}. A transaction that has already been used to charge cannot be reassigned on some chargers. Authorize before the next charging transaction and check the integration logs. No charging session was stopped or restarted."
         }
     },
     "config": {

@@ -2,10 +2,10 @@
     "entity": {
         "button": {
             "authenticate_audi": {
-                "name": "Audi authentifizieren"
+                "name": "Audi freigeben (Chip 0)"
             },
             "authenticate_fiat": {
-                "name": "Fiat authentifizieren"
+                "name": "Fiat freigeben (Chip 1)"
             }
         }
     },
@@ -18,6 +18,9 @@
         },
         "charger_command_failed": {
             "message": "Der Befehl konnte nicht an die Ladestation gesendet werden. Bitte die Integrationsprotokolle prüfen."
+        },
+        "authentication_not_confirmed": {
+            "message": "Die Ladestation hat ID-Chip {chip} nicht bestätigt. Eine bereits zum Laden verwendete Transaktion kann bei manchen Ladestationen nicht neu zugeordnet werden. Bitte vor der nächsten Ladetransaktion freigeben und die Integrationsprotokolle prüfen. Es wurde kein Ladevorgang gestoppt oder neu gestartet."
         }
     },
     "config": {

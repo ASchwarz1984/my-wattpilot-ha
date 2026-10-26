@@ -109,8 +109,12 @@ Two additional buttons are enabled by default:
 
 | Button | Configured chip | Transaction value sent |
 | --- | --- | --- |
-| Authenticate Audi | ID chip 0 | `trx=1` |
-| Authenticate Fiat | ID chip 1 | `trx=2` |
+| Authorize Audi (chip 0) | ID chip 0 | `trx=1` |
+| Authorize Fiat (chip 1) | ID chip 1 | `trx=2` |
+
+With German entity translations, the buttons are named **Audi freigeben (Chip 0)**
+and **Fiat freigeben (Chip 1)**. Updating keeps existing entity IDs and any
+user-defined names; reload or restart Home Assistant to refresh the default names.
 
 Configure those chips on the charger first. The existing generic **Authenticate**
 button remains unchanged: `trx=0` authorizes without a chip.
@@ -118,6 +122,18 @@ The vehicle buttons use the existing transaction command, not a forced-start
 command; they do not change charging mode, current limits, schedules or cloud
 settings. Select the correct vehicle when authorizing a new charging session.
 The charger must report transaction support and the selected chip slot.
+
+The vehicle buttons wait up to 10 seconds for the charger-reported transaction
+to identify the selected chip. If it does not, Home Assistant shows an error;
+the integration does not fabricate a successful chip reading.
+
+An observed first-generation 11 kW charger on firmware 42.5 rejects changing
+the identity of a transaction that has already been used to charge, reporting
+`cannot start another transaction when it has already been used to charge`.
+Consequently, pressing a vehicle button during such a session cannot reassign
+its existing energy to a different chip. Authorize the desired chip before the
+next charging transaction starts. The buttons do not stop, reset or restart a
+transaction to bypass this restriction.
 
 Enable the existing **ID Chip Current** sensor in **Settings > Devices &
 services > Wattpilot > Entities** to see the chip reported by the charger.
@@ -129,9 +145,10 @@ available for separate consumption tracking.
 The mapping is documented in the bundled client's API data and existing sensor
 definitions. First-generation 11 kW firmware 42.5 is the intended installation,
 but authentication and energy attribution must still be checked on a real
-charger. A successfully sent command is not a device acknowledgement: verify
-**ID Chip Current** before relying on it for attribution. Rejected commands are
-logged by the client; no chip or energy reading is fabricated.
+charger. The buttons confirm only the charger-reported chip, not successful
+charging or energy attribution: verify **ID Chip Current** and the per-chip
+energy counters before relying on them. Rejected commands are logged by the
+client; no chip or energy reading is fabricated.
 
 ### Using MyHA:
 

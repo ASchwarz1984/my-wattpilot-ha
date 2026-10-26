@@ -61,7 +61,7 @@ button:
     uid: authenticate_audi
     set_value: 1
     set_type: int
-    name: "Authenticate Audi"
+    name: "Authorize Audi (chip 0)"
     translation_key: authenticate_audi
     description: "Authenticate charging using Audi ID chip 0"
     icon: "mdi:car-key"
@@ -70,7 +70,7 @@ button:
     uid: authenticate_fiat
     set_value: 2
     set_type: int
-    name: "Authenticate Fiat"
+    name: "Authorize Fiat (chip 1)"
     translation_key: authenticate_fiat
     description: "Authenticate charging using Fiat ID chip 1"
     icon: "mdi:car-key"

@@ -35,13 +35,17 @@ Allows for control of [Fronius Wattpilot](https://www.fronius.com/en/solar-energ
 
 ## Vehicle Authentication
 
-**Authenticate Audi** uses ID chip 0 (`trx=1`), and **Authenticate Fiat**
+**Authorize Audi (chip 0)** uses ID chip 0 (`trx=1`), and **Authorize Fiat (chip 1)**
 uses ID chip 1 (`trx=2`). Enable the existing **ID Chip Current** sensor to
 observe the charger-reported identity. Neither button forces charging or
 changes charging limits, schedules or cloud settings.
 
 Configure the chip slots on the charger first and verify identity and energy
-attribution on the device. Sending a command does not prove device acceptance.
+attribution on the device. The buttons wait up to 10 seconds for the selected
+chip to be reported and show an error otherwise. A transaction that has already
+been used to charge cannot be reassigned on the observed first-generation
+firmware 42.5 charger; authorize before the next charging transaction starts.
+No transaction is stopped, reset or restarted automatically.
 
 # Screenshots
 

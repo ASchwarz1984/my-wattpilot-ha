@@ -51,10 +51,11 @@ class _Entity:
 
 
 class _HomeAssistantError(Exception):
-    def __init__(self, *args, translation_domain=None, translation_key=None):
+    def __init__(self, *args, translation_domain=None, translation_key=None, translation_placeholders=None):
         super().__init__(*args or (translation_key,))
         self.translation_domain = translation_domain
         self.translation_key = translation_key
+        self.translation_placeholders = translation_placeholders
 
 
 class _SensorStateClass:
@@ -147,6 +148,7 @@ def _stub_const():
         CONF_SERIAL="serial",
         DEFAULT_NAME="Wattpilot",
         DEFAULT_TIMEOUT=15,
+        AUTHENTICATION_TIMEOUT=10,
         DOMAIN="wattpilot",
         EVENT_PROPS_ID="wattpilot_property_message",
         EVENT_PROPS=["ftt", "cak"],

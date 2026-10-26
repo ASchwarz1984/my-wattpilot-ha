@@ -17,6 +17,7 @@ from homeassistant.exceptions import HomeAssistantError
 from .entities import ChargerPlatformEntity
 
 from .const import (
+    AUTHENTICATION_TIMEOUT,
     CONF_CHARGER,
     CONF_PUSH_ENTITIES,
     DOMAIN,
@@ -92,7 +93,7 @@ class ChargerButton(ChargerPlatformEntity, ButtonEntity):
         if translation_key := self._entity_cfg.get('translation_key'):
             self._attr_translation_key = translation_key
             self._attr_has_entity_name = True
-            self._attr_name = None
+            del self._attr_name
 
 
     async def async_local_poll(self) -> None:
@@ -105,9 +106,26 @@ class ChargerButton(ChargerPlatformEntity, ButtonEntity):
         """Async: Handle button press"""
         if not self.available:
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="charger_unavailable")
-        if self._identifier == "trx" and self._set_value in (1, 2):
+        chip_authentication = self._identifier == "trx" and self._set_value in (1, 2)
+        if chip_authentication:
             cards = self._charger.allProps.get("cards")
             if "trx" not in self._charger.allProps or not isinstance(cards, list) or len(cards) < self._set_value:
                 raise HomeAssistantError(translation_domain=DOMAIN, translation_key="authentication_chip_unavailable")
+            if self._charger.allProps["trx"] == self._set_value:
+                return
         if not await async_SetChargerProp(self._charger, self._identifier, self._set_value, force=True, force_type=self._set_type):
             raise HomeAssistantError(translation_domain=DOMAIN, translation_key="charger_command_failed")
+        if chip_authentication:
+            try:
+                async with asyncio.timeout(AUTHENTICATION_TIMEOUT):
+                    while self._charger.allProps.get("trx") != self._set_value:
+                        if not self.available:
+                            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="charger_unavailable")
+                        await asyncio.sleep(0.1)
+            except TimeoutError:
+                _LOGGER.warning("%s - %s: Charger did not confirm ID chip %s within %s seconds", self._charger_id, self._identifier, self._set_value - 1, AUTHENTICATION_TIMEOUT)
+                raise HomeAssistantError(
+                    translation_domain=DOMAIN,
+                    translation_key="authentication_not_confirmed",
+                    translation_placeholders={"chip": str(self._set_value - 1)},
+                ) from None
