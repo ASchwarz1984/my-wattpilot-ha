@@ -1,4 +1,25 @@
 {
+    "entity": {
+        "button": {
+            "authenticate_audi": {
+                "name": "Authenticate Audi"
+            },
+            "authenticate_fiat": {
+                "name": "Authenticate Fiat"
+            }
+        }
+    },
+    "exceptions": {
+        "charger_unavailable": {
+            "message": "The charger is disconnected or not ready."
+        },
+        "authentication_chip_unavailable": {
+            "message": "The charger does not report the required ID chip or transaction support."
+        },
+        "charger_command_failed": {
+            "message": "The command could not be sent to the charger. Check the integration logs."
+        }
+    },
     "config": {
         "abort": {
             "single_instance_allowed": "Only a single configuration instance is allowed.",

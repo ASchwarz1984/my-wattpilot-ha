@@ -55,6 +55,45 @@ class TestGetChargerProp:
         assert GetChargerProp(charger, "rbc") == 3
 
 
+class TestNonblockingSocketOperations:
+
+    @pytest.mark.asyncio
+    async def test_send_runs_outside_the_event_loop(self, charger):
+        import sys
+        import threading
+        utils = sys.modules["custom_components.wattpilot.utils"]
+        loop_thread = threading.get_ident()
+        sent = []
+
+        def send_update(identifier, value):
+            sent.append((identifier, value, threading.get_ident()))
+
+        charger.send_update = send_update
+        assert await utils.async_SetChargerProp(charger, "trx", 1, force=True)
+        assert sent[0][:2] == ("trx", 1)
+        assert sent[0][2] != loop_thread
+
+    @pytest.mark.asyncio
+    async def test_disconnect_runs_outside_the_event_loop(self, charger):
+        import sys
+        import threading
+        utils = sys.modules["custom_components.wattpilot.utils"]
+        called = []
+        charger.disconnect = lambda: called.append(threading.get_ident())
+        await utils.async_DisconnectCharger("entry", charger)
+        assert called and called[0] != threading.get_ident()
+
+    @pytest.mark.asyncio
+    async def test_disconnected_charger_does_not_send(self, charger):
+        import sys
+        from unittest.mock import MagicMock
+        utils = sys.modules["custom_components.wattpilot.utils"]
+        charger.connected = False
+        charger.send_update = MagicMock()
+        assert await utils.async_SetChargerProp(charger, "trx", 1, force=True) is False
+        charger.send_update.assert_not_called()
+
+
 class TestPropertyUpdateHandler:
 
     @staticmethod

@@ -1,4 +1,9 @@
-[Wattpilot Custom Component](https://github.com/mk-maddin/wattpilot-HA) for homeassistant
+[My Wattpilot HA](https://github.com/ASchwarz1984/my-wattpilot-ha) for Home Assistant.
+
+Independently maintained from Wattpilot-HA v0.4.0, with a bundled client,
+Audi (chip 0) and Fiat (chip 1) authentication buttons, and unchanged existing
+integration identifiers. See the [current installation and migration guide](https://github.com/ASchwarz1984/my-wattpilot-ha#installation-and-configuration)
+before replacing an existing installation. Historical credits below are retained.
 
 # What This Is:
 
@@ -28,18 +33,15 @@ Allows for control of [Fronius Wattpilot](https://www.fronius.com/en/solar-energ
 * log value changes for properties of the wallbox as warnings (enable/disable via service call)
 * can enable/disable e-go cloud charging API (enable/disable via service call) -> this is at your own responsibility - is not clear if fronius/you "pay" in some way for the e-go cloud API and thus are legally allowed to use -> as it is not required at the moment for the functionality of this component, I do not recommend to enable
 
-## Open Topics:
+## Vehicle Authentication
 
-* create an [update entity](https://www.home-assistant.io/blog/2022/04/06/release-20224/#introducing-update-entities)
-* create a light integration for LED color control etc.
-* OCPP values support
+**Authenticate Audi** uses ID chip 0 (`trx=1`), and **Authenticate Fiat**
+uses ID chip 1 (`trx=2`). Enable the existing **ID Chip Current** sensor to
+observe the charger-reported identity. Neither button forces charging or
+changes charging limits, schedules or cloud settings.
 
-## Known Errors:
-
-* after Wattpilot firmware update the device no longer establishes an active connection until next HA restart.
-  WORKAROUND: Restart home assistant once after Wattpilot firmware upgrade 
-* after Wattpilot has gone offline (due to power loss / Wattpilot GO / WiFi disconnect) the device no longer establishes an active connection until next HA restart.
-  WORKAROUND: Restart home assistant once after Wattpilot was offline
+Configure the chip slots on the charger first and verify identity and energy
+attribution on the device. Sending a command does not prove device acceptance.
 
 # Screenshots
 
@@ -55,8 +57,9 @@ Allows for control of [Fronius Wattpilot](https://www.fronius.com/en/solar-energ
 
 # Installation and Configuration
 
-ATTENTION: Default configuration is for wattpilot firmware version > 38.5 !!
-If you are using older firmware, please read "Known Errors" instructions.
+Back up Home Assistant before replacing an existing installation. Keep the
+existing Wattpilot entry in **Settings > Devices & services** and its charger
+name, so configuration and entity IDs are retained.
 
 ## Installation
 
@@ -64,7 +67,10 @@ If you are using older firmware, please read "Known Errors" instructions.
 
 Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed?
 You can manually add this repository to your HACS installation. [Here is the manual process](https://hacs.xyz/docs/faq/custom_repositories/).
-Then search for "Wattpilot" and install it directy from HACS.
+Add `https://github.com/ASchwarz1984/my-wattpilot-ha` with category **Integration**.
+Remove the original HACS repository/installation first without deleting the
+Home Assistant integration entry; never install both copies together.
+Then search for "My Wattpilot HA" and install it directly from HACS.
 HACS will keep track of updates and you can easily upgrade to latest version. See Configuration for how to add it in HA.
 
 ### Install manually

@@ -69,6 +69,24 @@ class TestEntityCategoryDefault:
 
 class TestNamespacelistGuard:
 
+    @pytest.mark.parametrize("index", [-1, 2, 9])
+    def test_unreported_chip_slot_is_not_initialized(self, charger, index):
+        entity = _entity({
+            "id": f"cards_{index}", "source": "namespacelist",
+            "namespace_id": index, "value_id": "energy",
+        }, charger)
+        assert entity._init_failed is True
+        assert entity.available is False
+
+    def test_removed_chip_slot_becomes_unavailable(self, charger):
+        entity = _entity({
+            "id": "cards_1", "source": "namespacelist",
+            "namespace_id": 1, "value_id": "energy",
+        }, charger)
+        assert entity.available is True
+        charger.allProps["cards"] = []
+        assert entity.available is False
+
     def test_missing_cards_sets_init_failed_without_crashing(self, charger_no_optional):
         """cards_0 with default_state=-1 (int): must set _init_failed, not TypeError."""
         cfg = {

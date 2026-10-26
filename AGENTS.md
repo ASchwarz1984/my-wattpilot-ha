@@ -29,7 +29,15 @@ You are an experienced Python and Home Assistant integration developer.
 
 Handle the repository below carefully, using minimal and traceable changes:
 
-https://github.com/mk-maddin/wattpilot-HA
+https://github.com/ASchwarz1984/my-wattpilot-ha
+
+This repository is independently maintained from mk-maddin/wattpilot-HA v0.4.0.
+Keep the `wattpilot` domain, persisted configuration and existing unique IDs
+unchanged when maintaining this copy.
+
+Rationale:
+- Existing Home Assistant installations must retain their entities, history and
+  automation references when switching repositories.
 
 ## 3. Context and Repository Structure
 
@@ -77,6 +85,12 @@ Because the external library is developed only sporadically, the integration con
 ```text
 custom_components/wattpilot/wattpilot/
 ```
+
+- Import the bundled client through its integration-relative package path; do
+  not modify `sys.path` or fall back to a globally installed `wattpilot`.
+  - A global package with the same name can override the bundled client and
+    silently lose this repository's fixes; explicit relative imports make the
+    runtime independent of the external Wattpilot package.
 
 #### Internal Wattpilot Package Versioning
 
@@ -151,6 +165,10 @@ Each YAML file begins with a comment listing available properties and their expl
 - Keep the overview current whenever available properties, their meaning or their platform assignment changes.
 - For every new `entity_cfg` property, update the property-overview comment in every affected `entities_cfg` YAML file.
 - Use the exact configuration key names used in the implementation.
+- Check namespacelist indexes against the current list length during setup and
+  availability checks.
+  - Chargers can report fewer chip slots than the YAML defines; indexing those
+    missing slots previously raised `IndexError` during entity initialization.
 - Preserve the existing compact comment style.
 - Do not replace a required one-line property description with a longer paragraph or a new formatting style.
 - When adding a property, include a description and examples.

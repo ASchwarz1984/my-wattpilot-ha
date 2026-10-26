@@ -1,12 +1,12 @@
 {
   "domain": "wattpilot",
   "name": "Fronius Wattpilot",
-  "codeowners": ["@mk-maddin"],
+  "codeowners": ["@ASchwarz1984"],
   "config_flow": true,
   "dependencies": ["sensor","switch","select","number","button","diagnostics"],
-  "documentation": "https://github.com/mk-maddin/wattpilot-HA",
+  "documentation": "https://github.com/ASchwarz1984/my-wattpilot-ha",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/mk-maddin/wattpilot-HA/issues",
-  "requirements": ["wattpilot>=0.2", "importlib_metadata>=4.0.0", "aiofiles>=23.2.1"],
-  "version": "0.4.0"
+  "issue_tracker": "https://github.com/ASchwarz1984/my-wattpilot-ha/issues",
+  "requirements": ["bcrypt==5.0.0", "websocket-client==1.9.2", "importlib_metadata>=4.0.0", "aiofiles>=23.2.1"],
+  "version": "0.4.1"
 }

@@ -8,6 +8,7 @@ button:
 #    uid: <optional: unique ID postfix - required if mutliple entities wiht same <id> value exist>
 #    set_type: <optional: type required by wattpilot api for setting value. 'bool','int','float' & 'string'>
 #    name: <optional: name of the switch within HA>
+#    translation_key: <optional: entity translation key, e.g. authenticate_audi or authenticate_fiat>
 #    description: <optional: key within HA>
 #    icon: <optional: key within HA>
 #    enabled: <optional: if set to False entity is by default disabled>
@@ -55,3 +56,21 @@ button:
     description: "Authenticate the charger without ID card"
     icon: "mdi:credit-card-wireless-outline"
     enabled: False
+
+  - id: trx
+    uid: authenticate_audi
+    set_value: 1
+    set_type: int
+    name: "Authenticate Audi"
+    translation_key: authenticate_audi
+    description: "Authenticate charging using Audi ID chip 0"
+    icon: "mdi:car-key"
+
+  - id: trx
+    uid: authenticate_fiat
+    set_value: 2
+    set_type: int
+    name: "Authenticate Fiat"
+    translation_key: authenticate_fiat
+    description: "Authenticate charging using Fiat ID chip 1"
+    icon: "mdi:car-key"

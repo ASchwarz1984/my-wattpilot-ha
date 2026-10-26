@@ -2,8 +2,8 @@
 [![Community Forum][community_forum_shield]][community_forum]
 [![PayPal.Me][paypal_me_shield]][paypal_me]
 
-[latest_release]: https://github.com/mk-maddin/wattpilot-HA/releases/latest
-[releases_shield]: https://img.shields.io/github/release/mk-maddin/wattpilot-HA.svg?style=popout
+[latest_release]: https://github.com/ASchwarz1984/my-wattpilot-ha/releases/latest
+[releases_shield]: https://img.shields.io/github/release/ASchwarz1984/my-wattpilot-ha.svg?style=popout
 
 [community_forum_shield]: https://img.shields.io/static/v1.svg?label=%20&message=Forum&style=popout&color=41bdf5&logo=HomeAssistant&logoColor=white
 [community_forum]: https://community.home-assistant.io/t/fronius-wattpilot/403118
@@ -12,6 +12,13 @@
 [paypal_me]: https://paypal.me/KraemerMar
 
 # What This Is:
+
+My Wattpilot HA is an independently maintained copy of
+[mk-maddin/wattpilot-HA v0.4.0](https://github.com/mk-maddin/wattpilot-HA/releases/tag/v0.4.0).
+Installation, issue reporting and releases use this repository. The integration
+loads only its bundled Wattpilot client; it does not install or fall back to the
+external `wattpilot` package. Standard Python dependencies are still required.
+Original attribution and licence files are preserved.
 
 This is a custom component to allow control of [Fronius Wattpilot](https://www.fronius.com/en/solar-energy/installers-partners/technical-data/all-products/solutions/fronius-wattpilot/fronius-wattpilot/wattpilot-home-11-j) wallbox/electro vehicle charging devices in [Homeassistant](https://home-assistant.io) using the unofficial/reverese enginered [wattpilot python module](https://github.com/joscha82/wattpilot).
 
@@ -50,7 +57,7 @@ Allows for control of [Fronius Wattpilot](https://www.fronius.com/en/solar-energ
 ## Known Errors:
 
 * No explicit known errors
-* See https://github.com/mk-maddin/wattpilot-HA/issues for issues.
+* See https://github.com/ASchwarz1984/my-wattpilot-ha/issues for issues.
 
 # Screenshots
 
@@ -74,7 +81,8 @@ Allows for control of [Fronius Wattpilot](https://www.fronius.com/en/solar-energ
 
 Do you you have [HACS](https://community.home-assistant.io/t/custom-component-hacs) installed?
 You can manually add this repository to your HACS installation. [Here is the manual process](https://hacs.xyz/docs/faq/custom_repositories/).
-Then search for "Wattpilot" and install it directy from HACS.
+Add `https://github.com/ASchwarz1984/my-wattpilot-ha` with category **Integration**.
+Then search for "My Wattpilot HA" and install it directly from HACS.
 HACS will keep track of updates and you can easily upgrade to latest version. See Configuration for how to add it in HA.
 
 ### Install manually
@@ -84,6 +92,48 @@ Once the files are downloaded, you’ll need to **restart HomeAssistant** and wa
 for the integration to appear within the integration store.
 
 ## Configuration
+
+### Replacing the original integration
+
+Back up Home Assistant first. Remove the original repository's installation from
+HACS without deleting the Wattpilot integration from **Settings > Devices &
+services**, then install this repository and restart Home Assistant. If HACS
+reports a duplicate integration domain, remove the old HACS repository before
+adding this one. Never install both copies together.
+
+The `wattpilot` domain, existing unique IDs and configuration format are
+unchanged. Keeping the existing integration entry and charger name avoids
+recreating entities or changing automation references.
+
+### Audi and Fiat authentication
+
+Two additional buttons are enabled by default:
+
+| Button | Configured chip | Transaction value sent |
+| --- | --- | --- |
+| Authenticate Audi | ID chip 0 | `trx=1` |
+| Authenticate Fiat | ID chip 1 | `trx=2` |
+
+Configure those chips on the charger first. The existing generic **Authenticate**
+button remains unchanged: `trx=0` authorizes without a chip.
+The vehicle buttons use the existing transaction command, not a forced-start
+command; they do not change charging mode, current limits, schedules or cloud
+settings. Select the correct vehicle when authorizing a new charging session.
+The charger must report transaction support and the selected chip slot.
+
+Enable the existing **ID Chip Current** sensor in **Settings > Devices &
+services > Wattpilot > Entities** to see the chip reported by the charger.
+`ID Chip 0` identifies the Audi and `ID Chip 1` the Fiat; these are assigned
+identities, not automatic vehicle detection. Charging itself is reported by
+the existing car/charging-state sensors. The chip energy sensors remain
+available for separate consumption tracking.
+
+The mapping is documented in the bundled client's API data and existing sensor
+definitions. First-generation 11 kW firmware 42.5 is the intended installation,
+but authentication and energy attribution must still be checked on a real
+charger. A successfully sent command is not a device acknowledgement: verify
+**ID Chip Current** before relying on it for attribution. Rejected commands are
+logged by the client; no chip or energy reading is fabricated.
 
 ### Using MyHA:
 

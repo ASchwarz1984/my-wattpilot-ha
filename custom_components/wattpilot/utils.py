@@ -31,32 +31,10 @@ from .const import (
     EVENT_PROPS_ID,
     EVENT_PROPS,
 )
+from .wattpilot.src import wattpilot
 
 _LOGGER: Final = logging.getLogger(__name__)
 
-import os
-import sys
-def _dynamic_load_module(modulename,subfolder='src',initfile='__init__.py'):
-    """Try to load a module from local custom component - if not load from system."""
-    try:
-        _LOGGER.debug("%s - _dynamic_load_module: %s", DOMAIN, modulename)
-        base_path = os.path.dirname(__file__)
-        local_module_path = os.path.join(base_path, modulename, subfolder)
-        local_init_path = os.path.join(local_module_path, modulename, initfile)
-        if os.path.exists(local_init_path):
-            _LOGGER.debug("%s - _dynamic_load_module: import local module: %s (%s)", DOMAIN, modulename, local_init_path)
-            if local_module_path not in sys.path:
-                sys.path.insert(0, local_module_path)
-            import wattpilot
-        else:
-            _LOGGER.debug("%s - _dynamic_load_module: import system wide module: %s", DOMAIN, modulename)
-            import wattpilot
-    except Exception as e:
-        _LOGGER.error("%s - _dynamic_load_module: failed: %s (%s.%s)", DOMAIN, str(e), e.__class__.__module__, type(e).__name__)
-        raise ImportError("failed to import module %s", modulename)
-    return wattpilot
-
-wattpilot=_dynamic_load_module('wattpilot')
 _LOGGER.debug("%s - utils: imported module from: %s (%s)", DOMAIN, wattpilot.__file__, getattr(wattpilot,'__version__','0.2.2?'))
 
 async def async_ProgrammingDebug(obj, show_all:bool=False) -> None:
@@ -203,6 +181,9 @@ async def async_SetChargerProp(charger, identifier:str=None, value:str=None, for
         if value is None:
             _LOGGER.error("%s - async_SetChargerProp: A value parameter is required: %s=%s", DOMAIN, identifier, value)
             return False
+        if not charger.connected or not charger.allPropsInitialized:
+            _LOGGER.error("%s - async_SetChargerProp: Charger is disconnected or not initialized", DOMAIN)
+            return False
       
         if not force_type == None:
             force_type=str(force_type).lower()
@@ -223,8 +204,7 @@ async def async_SetChargerProp(charger, identifier:str=None, value:str=None, for
             v=str(value)
 
         _LOGGER.debug("%s - async_SetChargerProp: Send property update to charger: %s=%s", DOMAIN, identifier, v)
-        charger.send_update(identifier,v)
-        await asyncio.sleep(0)
+        await asyncio.to_thread(charger.send_update, identifier, v)
         return True
     except Exception as e:
         _LOGGER.error("%s - async_SetChargerProp: Could not set property %s: %s (%s.%s)", DOMAIN, identifier, str(e), e.__class__.__module__, type(e).__name__)
@@ -351,9 +331,9 @@ async def async_DisconnectCharger(entry_or_device_id, charger):
     try:
         _LOGGER.debug("%s - async_DisconnectCharger: disconnect charger: %s", entry_or_device_id, charger)
         if hasattr(charger, 'disconnect') and callable(charger.disconnect):
-            charger.disconnect()
+            await asyncio.to_thread(charger.disconnect)
         else: #workaround unitl wattpilot python package > 0.2 with built in disconnect is released
-            charger._wsapp.close()
+            await asyncio.to_thread(charger._wsapp.close)
             charger._connected=False
         return None
     except Exception as e:

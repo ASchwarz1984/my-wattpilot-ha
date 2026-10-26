@@ -1,4 +1,25 @@
 {
+    "entity": {
+        "button": {
+            "authenticate_audi": {
+                "name": "Audi authentifizieren"
+            },
+            "authenticate_fiat": {
+                "name": "Fiat authentifizieren"
+            }
+        }
+    },
+    "exceptions": {
+        "charger_unavailable": {
+            "message": "Die Ladestation ist nicht verbunden oder noch nicht bereit."
+        },
+        "authentication_chip_unavailable": {
+            "message": "Die Ladestation meldet den erforderlichen ID-Chip oder die Transaktionsunterstützung nicht."
+        },
+        "charger_command_failed": {
+            "message": "Der Befehl konnte nicht an die Ladestation gesendet werden. Bitte die Integrationsprotokolle prüfen."
+        }
+    },
     "config": {
         "abort": {
             "single_instance_allowed": "Nur eine Instanz dieser Konfiguration is erlaubt.",

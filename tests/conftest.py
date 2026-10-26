@@ -50,6 +50,13 @@ class _Entity:
     enabled = True
 
 
+class _HomeAssistantError(Exception):
+    def __init__(self, *args, translation_domain=None, translation_key=None):
+        super().__init__(*args or (translation_key,))
+        self.translation_domain = translation_domain
+        self.translation_key = translation_key
+
+
 class _SensorStateClass:
     MEASUREMENT = "measurement"
     TOTAL = "total"
@@ -81,6 +88,7 @@ _stub_module("homeassistant.const",
 _stub_module("homeassistant.core", HomeAssistant=object)
 # HA config_entries
 _stub_module("homeassistant.config_entries", ConfigEntry=object)
+_stub_module("homeassistant.exceptions", HomeAssistantError=_HomeAssistantError)
 # HA loader
 _stub_module("homeassistant.loader", async_get_integration=mock.AsyncMock())
 # HA helpers
@@ -98,6 +106,7 @@ _stub_module("homeassistant.components.sensor",
     SensorEntity=_Entity,
     UNIT_CONVERTERS={},
 )
+_stub_module("homeassistant.components.button", ButtonEntity=type("ButtonEntity", (), {}))
 # HA root
 _stub_module("homeassistant",
     core=sys.modules["homeassistant.core"],
@@ -168,6 +177,8 @@ def _load_file_as_module(rel_path: str, module_name: str):
 # Stub the package __init__ so submodule imports don't trigger it
 _pkg_stub = _stub_module("custom_components")
 _pkg_stub2 = _stub_module("custom_components.wattpilot")
+_stub_module("custom_components.wattpilot.wattpilot")
+_stub_module("custom_components.wattpilot.wattpilot.src", wattpilot=_wattpilot_stub)
 _stub_const()
 
 # Load utils first (entities.py depends on it)

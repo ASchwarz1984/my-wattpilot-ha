@@ -79,7 +79,7 @@ class ChargerPlatformEntity(Entity):
                     self._init_failed=True
                 elif self._source == 'namespacelist':
                     _ns_val = GetChargerProp(self._charger, self._identifier, self._default_state)
-                    if not isinstance(_ns_val, list) or _ns_val[int(self._namespace_id)] is None:
+                    if not isinstance(_ns_val, list) or not 0 <= self._namespace_id < len(_ns_val) or _ns_val[self._namespace_id] is None:
                         _LOGGER.error("%s - %s: __init__: Charger does not have a namespacelist item: %s[%s]", self._charger_id, self._identifier, self._identifier, self._namespace_id)
                         self._init_failed=True
             if self._init_failed == True: return None
@@ -253,7 +253,7 @@ class ChargerPlatformEntity(Entity):
             return False
         elif self._source == 'namespacelist':
             _ns_val = GetChargerProp(self._charger, self._identifier, self._default_state)
-            if not isinstance(_ns_val, list) or _ns_val[int(self._namespace_id)] is None:
+            if not isinstance(_ns_val, list) or not 0 <= self._namespace_id < len(_ns_val) or _ns_val[self._namespace_id] is None:
                 _LOGGER.debug("%s - %s: available: false because unknown namespacelist item: %s", self._charger_id, self._identifier, self._namespace_id)
                 return False
             return True
@@ -420,4 +420,3 @@ class ChargerPlatformEntity(Entity):
                 await self.async_local_push(state,True)
             else:
                 _LOGGER.error("%s - %s: async_local_push failed: %s (%s.%s)", self._charger_id, self._identifier, str(e), e.__class__.__module__, type(e).__name__)
-

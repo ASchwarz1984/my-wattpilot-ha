@@ -12,6 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.button import ButtonEntity
 from homeassistant.const import STATE_UNKNOWN
+from homeassistant.exceptions import HomeAssistantError
 
 from .entities import ChargerPlatformEntity
 
@@ -62,7 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 _LOGGER.error("%s - async_setup_entry %s: Invalid yaml configuration - no source: %s", entry.entry_id, platform, entity_cfg)
                 continue
             entity=ChargerButton(hass, entry, entity_cfg, charger)
-            if entity is None: continue
+            if getattr(entity, '_init_failed', True): continue
             entites.append(entity)
             if entity._source == 'property':
                 push_entities[entity._identifier]=entity
@@ -86,7 +87,12 @@ class ChargerButton(ChargerPlatformEntity, ButtonEntity):
         self._set_value = self._entity_cfg.get('set_value', None)
         if self._set_value == None:
             _LOGGER.error("%s - %s: __init__: Required configuration option 'set_value' missing - please specify: %s", self._charger_id, self._identifier, self._set_value)
+            self._init_failed = True
             return None
+        if translation_key := self._entity_cfg.get('translation_key'):
+            self._attr_translation_key = translation_key
+            self._attr_has_entity_name = True
+            self._attr_name = None
 
 
     async def async_local_poll(self) -> None:
@@ -97,7 +103,11 @@ class ChargerButton(ChargerPlatformEntity, ButtonEntity):
 
     async def async_press(self) -> None:
         """Async: Handle button press"""
-        try:
-            await async_SetChargerProp(self._charger,self._identifier,self._set_value,force=True,force_type=self._set_type)
-        except Exception as e:
-            _LOGGER.error("%s - %s: update failed: %s (%s.%s)", self._charger_id, self._identifier, str(e), e.__class__.__module__, type(e).__name__)
+        if not self.available:
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="charger_unavailable")
+        if self._identifier == "trx" and self._set_value in (1, 2):
+            cards = self._charger.allProps.get("cards")
+            if "trx" not in self._charger.allProps or not isinstance(cards, list) or len(cards) < self._set_value:
+                raise HomeAssistantError(translation_domain=DOMAIN, translation_key="authentication_chip_unavailable")
+        if not await async_SetChargerProp(self._charger, self._identifier, self._set_value, force=True, force_type=self._set_type):
+            raise HomeAssistantError(translation_domain=DOMAIN, translation_key="charger_command_failed")
