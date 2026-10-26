@@ -1,14 +1,31 @@
 """Vehicle buttons exercised through a real Home Assistant entity platform."""
 
+import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import Platform
+from homeassistant.const import EVENT_STATE_CHANGED, Platform
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+
+async def _wait_for_reported_state(hass, entity_id, expected, action):
+    reported = asyncio.Event()
+
+    async def state_changed(event):
+        state = event.data.get("new_state")
+        if event.data["entity_id"] == entity_id and state and state.state == expected:
+            reported.set()
+
+    unsubscribe = hass.bus.async_listen(EVENT_STATE_CHANGED, state_changed)
+    try:
+        await action()
+        await asyncio.wait_for(reported.wait(), timeout=5)
+    finally:
+        unsubscribe()
 
 
 @pytest.fixture
@@ -91,12 +108,17 @@ async def test_vehicle_buttons_setup_press_reload_and_unload(hass, charger, lang
             else:
                 assert hass.states.get(entity_id).attributes["friendly_name"] == f"Garage {labels[vehicle]}"
         chip_sensor = registry.async_get_entity_id("sensor", "wattpilot", "Garage-trx")
-        await hass.async_add_executor_job(report_transaction, "trx", charger.allProps["trx"])
-        await hass.async_block_till_done()
+        await _wait_for_reported_state(
+            hass, chip_sensor, "No Chip",
+            lambda: hass.async_add_executor_job(report_transaction, "trx", charger.allProps["trx"]),
+        )
         assert hass.states.get(chip_sensor).state == "No Chip"
         for vehicle, transaction in (("audi", 1), ("fiat", 2)):
-            await hass.services.async_call(
-                "button", "press", {"entity_id": entity_ids[vehicle]}, blocking=True
+            await _wait_for_reported_state(
+                hass, chip_sensor, f"ID Chip {transaction - 1}",
+                lambda: hass.services.async_call(
+                    "button", "press", {"entity_id": entity_ids[vehicle]}, blocking=True
+                ),
             )
             await hass.async_block_till_done()
             charger.send_update.assert_called_with("trx", transaction)

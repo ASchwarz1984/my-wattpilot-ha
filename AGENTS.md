@@ -332,6 +332,11 @@ For Wattpilot JSON export files, perform exhaustive property analysis programmat
    - `tests/` stubs Home Assistant and runs offline and fast. `tests_ha/` runs config entry setup and the options flow against a real Home Assistant core via `pytest-homeassistant-custom-component` (CI job "HA Flow Tests").
    - Keep real-Home-Assistant tests in `tests_ha/`, never in `tests/`.
      - `tests/conftest.py` replaces the `homeassistant` modules in `sys.modules`; real-Home-Assistant tests collected below it would silently run against the stubs or fail on import.
+   - Await the relevant state-change event when testing cross-thread charger
+     callbacks.
+     - Tasks scheduled with `asyncio.run_coroutine_threadsafe` are not reliably
+       drained by `hass.async_block_till_done`; the chip sensor test observed its
+       update only after an assertion had already failed.
 5. Verify at least:
    - Syntax and imports
    - Async behaviour
